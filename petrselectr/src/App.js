@@ -12,15 +12,22 @@ function App() {
   const [winter, setWinter] = useState([]);
   const [spring, setSpring] = useState([]);
 
-  const graphqlRequest = useFetch('https://api.peterportal.org/graphql/') // may be better to put this link in .env?
+  const options = {
+    // displays error message when an error occurs
+    onError: ({error}) => {
+      console.log("An error occurred. Please try searching the course again.")
+    }
+  }
+
+  const graphqlRequest = useFetch('https://api.peterportal.org/graphql/', options) // may be better to put this link in .env?
   const getCourseInfo = id => graphqlRequest.query(courseInfoQuery, {classID: id})
 
-  const getData = e => {
+  const getData = async e => {
     e.preventDefault();
     const formData = new FormData(e.target),
     formDataObj = Object.fromEntries(formData.entries())
     console.log(formDataObj) //form input
-
+    
     getCourseInfo(formDataObj.course)
   }
 
