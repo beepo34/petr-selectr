@@ -22,19 +22,17 @@ function App() {
   const graphqlRequest = useFetch('https://api.peterportal.org/graphql/', options) // may be better to put this link in .env?
   const getCourseInfo = id => graphqlRequest.query(courseInfoQuery, {classID: id})
 
-  const getData = async e => {
-    e.preventDefault();
-    const formData = new FormData(e.target),
-    formDataObj = Object.fromEntries(formData.entries())
-    console.log(formDataObj) //form input
+  const getData = async(id) => {
+  console.log(id) //form input
     
-    getCourseInfo(formDataObj.course)
+  await getCourseInfo(id)
+  console.log(graphqlRequest.data.data.course.id)
   }
 
   return (
     <>
       <Header getData={getData} />
-      <Schedule fall={fall} winter={winter} spring={spring} />
+      <Schedule course={graphqlRequest.data.data.course} fall={fall} winter={winter} spring={spring} />
       <Professors profs={profs} />
     </>
   );
