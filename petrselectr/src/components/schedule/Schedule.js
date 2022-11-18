@@ -1,19 +1,31 @@
 import React, { useState } from 'react';
-import Table from 'react-bootstrap/Table';
+import './ScheduleStyle.css'
 
-function Schedule({course, fall, winter, spring}) {
+function Schedule({ course, fall, winter, spring }) {
     return (
-        <Table bordered>
-            <tbody>
+        <table bordered className="table-bordered scheduleTable">
+            <thead>
                 <tr>
-                    <th className="text-center">{course.id}</th>
+                    <th className="course-title col-3 text-center">Course</th>
                     <th className="col-3">Fall</th>
                     <th className="col-3">Winter</th>
                     <th className="col-3">Spring</th>
                 </tr>
+            </thead>
+            <tbody>
                 <tr>
-                    <td>
+                    <td className="course-info">
+                        <b>{course.department} {course.number}</b>
                         <p>{course.title}</p>
+                        <p className="description">{course.description}</p>
+                        <span>
+                            <span className="tag">
+                                {course.course_level}
+                            </span>
+                            <span className="tag">
+                                {course.units} units
+                            </span>
+                        </span>
                     </td>
                     <td>
                         {
@@ -38,7 +50,7 @@ function Schedule({course, fall, winter, spring}) {
                     </td>
                 </tr>
             </tbody>
-        </Table>
+        </table>
     )
 }
 

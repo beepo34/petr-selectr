@@ -1,13 +1,47 @@
+:root {
+  --primary-color-1: #2484c6;
+  --primary-color-2: #74d1f6;
+  --gray-blue: #f5f6fc;
+  --light-gray: #dee2e6;
+  --gray:  #8d8d8d;
+  --blue-gradient: linear-gradient(90deg, rgb(238, 248, 255) 0%, rgb(215, 238, 253) 47%, rgb(216, 235, 248) 62%);
+}
+
 body {
-  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  justify-content: space-between;
+  height: 100vh;
+  width: 100%;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+div {
+  align-content: center;
+  padding: 15px;
+}
+
+.row {
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+}
+
+.header-row{
+  height: 10vh;
+}
+
+.schedule-row {
+  height: 35vh;
+}
+
+.professors-row {
+  height: 55vh;
 }
