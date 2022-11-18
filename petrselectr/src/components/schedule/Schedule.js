@@ -18,14 +18,18 @@ function Schedule({ course, fall, winter, spring }) {
                         <b>{course.department} {course.number}</b>
                         <p>{course.title}</p>
                         <p className="description">{course.description}</p>
-                        <span>
-                            <span className="tag">
-                                {course.course_level}
+                        {course.course_level == null && course.units == null ?
+                            null
+                            :
+                            <span>
+                                <span className="tag">
+                                    {course.course_level}
+                                </span>
+                                <span className="tag">
+                                    {course.units} units
+                                </span>
                             </span>
-                            <span className="tag">
-                                {course.units} units
-                            </span>
-                        </span>
+                        }
                     </td>
                     <td>
                         {
