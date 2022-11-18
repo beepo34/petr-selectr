@@ -6,9 +6,10 @@ import Professors from './components/professors/Professors.js'
 import { courseInfoQuery } from './api/queries/queries'
 import useFetch from 'use-http'
 import './bootstrap.min.css';
+import cheerio from 'cheerio'
 
 function App() {
-
+  const [courseOfferingsHTML, setCourseOfferingsHTML] = useState("")
   const [profs, setProfs] = useState([]);
   const [courseInfo, setCourseInfo] = useState({});
   const [gradeInfo, setGradeInfo] = useState({});
@@ -29,7 +30,6 @@ function App() {
 
 const getData = async (id) => {
   console.log(id) //form input
-
   await getCourseInfo(id)
     .then((response) => {
       console.log(response.data)
@@ -87,6 +87,28 @@ const getInstructorCourseGrades = async () => {
 useEffect(() => {
   if (JSON.stringify(courseInfo) !== "{}") getInstructorCourseGrades();
 }, [courseInfo])
+
+useEffect(() => {
+  const fetchCourseOfferings = async () =>{
+    // get html from course offerings website
+    const url = 'https://cors-anywhere.herokuapp.com/https://www.ics.uci.edu/ugrad/courses/listing-course.php?year=2022&level=ALL&department=ALL&program=ALL'
+    const response = await fetch(url, {
+      headers: {
+         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
+      }
+    })
+    const template = await response.text()
+    setCourseOfferingsHTML(template)
+
+  }
+  fetchCourseOfferings()
+}, [])
+
+const getCourseOfferingRow = (html, department, number) => {
+  let $ = cheerio.load(html)
+  let id = department + " " + number
+  console.log($(`tr:contains(${id})`).html())
+}
 
   return (
     <Container fluid>
