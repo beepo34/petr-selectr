@@ -28,7 +28,10 @@ function App() {
     console.log(id) //form input
 
     await getCourseInfo(id)
-    setCourseInfo(graphqlRequest.data.data.course)
+    .then((response)=>{
+      console.log(response.data)
+      setCourseInfo(response.data.course)
+    })
   }
 
   return (
