@@ -27,39 +27,13 @@ function App() {
   const graphqlRequest = useFetch('https://api.peterportal.org/graphql/', options) // may be better to put this link in .env?
   const getCourseInfo = id => graphqlRequest.query(courseInfoQuery, { classID: id })
 
-  const getData = async (id) => {
-    console.log(id) //form input
+const getData = async (id) => {
+  console.log(id) //form input
 
-    await getCourseInfo(id)
-      .then((response) => {
-        console.log(response.data)
-        setCourseInfo(response.data.course)
-        const instructors = []
-        response.data.course.instructor_history.forEach(prof => {
-          instructors.push({ucinetid: prof.ucinetid, name: prof.name, shortened_name: prof.shortened_name})
-        })
-        console.log(instructors)
-        setProfs(instructors)
-      })
-  }
-
-  const getInstructorCourseGrades = async () => {
-    const instructorCourseGradesQuery = "query {" + courseInfo.instructor_history.reduce((query, prof) => {
-      return query + `${prof.ucinetid}: grades(instructor: "${prof.shortened_name}", department: "${courseInfo.department}", number: "${courseInfo.number}") {
-          aggregate{
-            sum_grade_a_count
-            sum_grade_b_count
-            sum_grade_c_count
-            sum_grade_d_count
-            sum_grade_f_count
-            average_gpa
-          }
-        }`
-      }, "") + "}" // constructs instructor grade distribution query
-    await graphqlRequest.query(instructorCourseGradesQuery)
+  await getCourseInfo(id)
     .then((response) => {
       console.log(response.data)
-      const data = {
+      const courseInfoData = {
         id: response.data.course.id,
         title: response.data.course.title,
         department: response.data.course.department,
@@ -68,25 +42,51 @@ function App() {
         course_level: response.data.course.course_level.split(" ").slice(0, 2).join(" "), // ignore course numbers
         units: response.data.course.units[0]
       }
-      setCourseInfo(data)
-      const grades = response.data
-      for (var key in grades) {
-        if (grades[key]) {
-        grades[key] = {x: ["A", "B", "C", "D", "F"], 
-                          y: [grades[key].aggregate.sum_grade_a_count,
-                          grades[key].aggregate.sum_grade_b_count,
-                          grades[key].aggregate.sum_grade_c_count,
-                          grades[key].aggregate.sum_grade_d_count,
-                          grades[key].aggregate.sum_grade_f_count]}
-        }
-      }
-      setGradeInfo(response.data)
-    })
-  }
+      setCourseInfo(courseInfoData)
 
-  useEffect(() => {
-    if (JSON.stringify(courseInfo) !== "{}") getInstructorCourseGrades();
-  }, [courseInfo])
+      const instructors = []
+      response.data.course.instructor_history.forEach(prof => {
+        instructors.push({ucinetid: prof.ucinetid, name: prof.name, shortened_name: prof.shortened_name})
+      })
+      console.log(instructors)
+      setProfs(instructors)
+    })
+}
+
+const getInstructorCourseGrades = async () => {
+  const instructorCourseGradesQuery = "query {" + courseInfo.instructor_history.reduce((query, prof) => {
+    return query + `${prof.ucinetid}: grades(instructor: "${prof.shortened_name}", department: "${courseInfo.department}", number: "${courseInfo.number}") {
+        aggregate{
+          sum_grade_a_count
+          sum_grade_b_count
+          sum_grade_c_count
+          sum_grade_d_count
+          sum_grade_f_count
+          average_gpa
+        }
+      }`
+    }, "") + "}" // constructs instructor grade distribution query
+  await graphqlRequest.query(instructorCourseGradesQuery)
+  .then((response) => {
+    console.log(response.data)
+    const grades = response.data
+    for (var key in grades) {
+      if (grades[key]) {
+      grades[key] = {x: ["A", "B", "C", "D", "F"], 
+                        y: [grades[key].aggregate.sum_grade_a_count,
+                        grades[key].aggregate.sum_grade_b_count,
+                        grades[key].aggregate.sum_grade_c_count,
+                        grades[key].aggregate.sum_grade_d_count,
+                        grades[key].aggregate.sum_grade_f_count]}
+      }
+    }
+    setGradeInfo(response.data)
+  })
+}
+
+useEffect(() => {
+  if (JSON.stringify(courseInfo) !== "{}") getInstructorCourseGrades();
+}, [courseInfo])
 
   return (
     <Container fluid>
