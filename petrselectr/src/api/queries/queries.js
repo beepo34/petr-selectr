@@ -3,6 +3,7 @@ export const courseInfoQuery = `query($classID: String!) {
       id
       title
       department
+      number
       units
       description
       course_level
