@@ -6,8 +6,15 @@ export const courseInfoQuery = `query($classID: String!) {
       units
       description
       course_level
+      department
+      number
       prerequisite_list{
         id
+      }
+      instructor_history {
+        name
+        shortened_name
+        ucinetid
       }
     }
   }`;
