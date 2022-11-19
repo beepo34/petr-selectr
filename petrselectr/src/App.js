@@ -17,6 +17,22 @@ function App() {
   const [winter, setWinter] = useState([]);
   const [spring, setSpring] = useState([]);
 
+  const departments = {
+    "COMPSCI": "CS",
+    "CSE": "CSE",
+    "ECE": "ECE",
+    "EDUC": "EDUC",
+    "EECS": "EECS",
+    "GDIM": "GDM",
+    "I&CSCI": "ICS",
+    "IN4MATX": "INF",
+    "MATH": "MATH",
+    "NETSYS": "NetSys",
+    "SWE": "SE",
+    "STATS": "STATS",
+    "US": "US"
+  }
+
   const options = {
     // displays error message when an error occurs
     onError: ({ error }) => {
@@ -28,34 +44,34 @@ function App() {
   const graphqlRequest = useFetch('https://api.peterportal.org/graphql/', options) // may be better to put this link in .env?
   const getCourseInfo = id => graphqlRequest.query(courseInfoQuery, { classID: id })
 
-const getData = async (id) => {
-  console.log(id) //form input
-  await getCourseInfo(id)
-    .then((response) => {
-      console.log(response.data)
-      const courseInfoData = {
-        id: response.data.course.id,
-        title: response.data.course.title,
-        department: response.data.course.department,
-        number: response.data.course.number,
-        description: response.data.course.description.split(".")[0] + ".", // only take the first sentence from the description
-        course_level: response.data.course.course_level.split(" ").slice(0, 2).join(" "), // ignore course numbers
-        units: response.data.course.units[0]
-      }
-      setCourseInfo(courseInfoData)
+  const getData = async (id) => {
+    console.log(id) //form input
+    await getCourseInfo(id)
+      .then((response) => {
+        const courseInfoData = {
+          id: response.data.course.id,
+          title: response.data.course.title,
+          department: response.data.course.department,
+          number: response.data.course.number,
+          description: response.data.course.description.split(".")[0] + ".", // only take the first sentence from the description
+          course_level: response.data.course.course_level.split(" ").slice(0, 2).join(" "), // ignore course numbers
+          units: response.data.course.units[0]
+        }
+        setCourseInfo(courseInfoData)
 
-      const instructors = []
-      response.data.course.instructor_history.forEach(prof => {
-        instructors.push({ucinetid: prof.ucinetid, name: prof.name, shortened_name: prof.shortened_name})
+        const instructors = []
+        response.data.course.instructor_history.forEach(prof => {
+          instructors.push({ ucinetid: prof.ucinetid, name: prof.name, shortened_name: prof.shortened_name })
+        })
+        setProfs(instructors)
       })
-      console.log(instructors)
-      setProfs(instructors)
-    })
-}
 
-const getInstructorCourseGrades = async () => {
-  const instructorCourseGradesQuery = "query {" + courseInfo.instructor_history.reduce((query, prof) => {
-    return query + `${prof.ucinetid}: grades(instructor: "${prof.shortened_name}", department: "${courseInfo.department}", number: "${courseInfo.number}") {
+    getCourseOfferingRowProfs(courseOfferingsHTML, courseInfo.department, courseInfo.number)
+  }
+
+  const getInstructorCourseGrades = async () => {
+    const instructorCourseGradesQuery = "query {" + courseInfo.instructor_history.reduce((query, prof) => {
+      return query + `${prof.ucinetid}: grades(instructor: "${prof.shortened_name}", department: "${courseInfo.department}", number: "${courseInfo.number}") {
         aggregate{
           sum_grade_a_count
           sum_grade_b_count
@@ -66,60 +82,109 @@ const getInstructorCourseGrades = async () => {
         }
       }`
     }, "") + "}" // constructs instructor grade distribution query
-  await graphqlRequest.query(instructorCourseGradesQuery)
-  .then((response) => {
-    console.log(response.data)
-    const grades = response.data
-    for (var key in grades) {
-      if (grades[key]) {
-      grades[key] = {x: ["A", "B", "C", "D", "F"], 
-                        y: [grades[key].aggregate.sum_grade_a_count,
-                        grades[key].aggregate.sum_grade_b_count,
-                        grades[key].aggregate.sum_grade_c_count,
-                        grades[key].aggregate.sum_grade_d_count,
-                        grades[key].aggregate.sum_grade_f_count]}
-      }
+    await graphqlRequest.query(instructorCourseGradesQuery)
+      .then((response) => {
+        const grades = response.data
+        for (var key in grades) {
+          if (grades[key]) {
+            grades[key] = {
+              x: ["A", "B", "C", "D", "F"],
+              y: [grades[key].aggregate.sum_grade_a_count,
+              grades[key].aggregate.sum_grade_b_count,
+              grades[key].aggregate.sum_grade_c_count,
+              grades[key].aggregate.sum_grade_d_count,
+              grades[key].aggregate.sum_grade_f_count]
+            }
+          }
+        }
+        setGradeInfo(response.data)
+      })
+  }
+
+  useEffect(() => {
+    if (JSON.stringify(courseInfo) !== "{}") getInstructorCourseGrades();
+  }, [courseInfo])
+
+  useEffect(() => {
+    const fetchCourseOfferings = async () => {
+      // get html from course offerings website
+      const url = 'https://cors-anywhere.herokuapp.com/https://www.ics.uci.edu/ugrad/courses/listing-course.php?year=2022&level=ALL&department=ALL&program=ALL'
+      const response = await fetch(url, {
+        headers: {
+          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
+        }
+      })
+      const template = await response.text()
+      setCourseOfferingsHTML(template)
+
     }
-    setGradeInfo(response.data)
-  })
-}
+    fetchCourseOfferings()
+  }, [])
 
-useEffect(() => {
-  if (JSON.stringify(courseInfo) !== "{}") getInstructorCourseGrades();
-}, [courseInfo])
+  const getCourseOfferingRowProfs = (html, department, number) => {
+    let $ = cheerio.load(html)
+    let id = departments[department] + " " + number
+    let rowHTML = $(`tr:contains(${id})`).html()
+    getProfs(`${rowHTML}`)
+  }
 
-useEffect(() => {
-  const fetchCourseOfferings = async () =>{
-    // get html from course offerings website
-    const url = 'https://cors-anywhere.herokuapp.com/https://www.ics.uci.edu/ugrad/courses/listing-course.php?year=2022&level=ALL&department=ALL&program=ALL'
-    const response = await fetch(url, {
-      headers: {
-         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
+  const getProfs = (html) => {
+    let i = html.search('<td class="instruction">')
+    let html_str = html.slice(i - html.length)
+    html_str = html_str.split('<td class="instruction"><a href="')
+
+    let counter = 0 // keep track of the quarters
+    for (let j = 0; j < html_str.length; j++) {
+      if (html_str[j].includes("http")) {
+        // run body if string contains a link
+        let profsList = []
+        let profs = html_str[j].split('</a>') // count the num of profs by the num of links
+
+        for (let k = 0; k < profs.length; k++) {
+          // only go up to prof.length - 1 bc the last element of the array does not have a link/prof
+          let link_i = profs[k].search('http') // find the end of the a tag
+          if (link_i !== -1) {
+            let link = profs[k].slice(link_i)
+            let link_end_i = profs[k].search('">')
+
+            link = link.slice(link_i, link_end_i + 1)
+            let name = profs[k].slice(link_end_i + 2)
+            profsList.push({
+              "name": name,
+              "link": link
+            })
+          }
+        }
+
+        if (counter === 0) {
+          // fall quarter
+          setFall(profsList)
+        } else if (counter === 1) {
+          // winter quarter
+          setWinter(profsList)
+        } else if (counter === 2) {
+          // spring quarter
+          setSpring(profsList)
+        }
+
+        counter++
       }
-    })
-    const template = await response.text()
-    setCourseOfferingsHTML(template)
+
+    }
 
   }
-  fetchCourseOfferings()
-}, [])
 
-const getCourseOfferingRow = (html, department, number) => {
-  let $ = cheerio.load(html)
-  let id = department + " " + number
-  console.log($(`tr:contains(${id})`).html())
-}
 
   return (
     <Container fluid>
       <Row className="row header-row">
-      <Header getData={getData}/>
+        <Header getData={getData} />
       </Row>
       <Row className="row schedule-row">
-      <Schedule course={courseInfo} fall={fall} winter={winter} spring={spring} />
+        <Schedule course={courseInfo} fall={fall} winter={winter} spring={spring} />
       </Row>
       <Row className="row professor-row">
-      <Professors profs={profs} gradeInfo={gradeInfo}/>
+        <Professors profs={profs} gradeInfo={gradeInfo} />
       </Row>
     </Container>
   );
