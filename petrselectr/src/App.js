@@ -3,12 +3,13 @@ import { Container, Row } from 'react-bootstrap'
 import Header from './components/header/Header.js'
 import Schedule from './components/schedule/Schedule.js'
 import Professors from './components/professors/Professors.js'
-import { courseInfoQuery } from './api/queries/queries'
+import { allCoursesQuery, courseInfoQuery } from './api/queries/queries'
 import useFetch from 'use-http'
 import './bootstrap.min.css';
 import cheerio from 'cheerio'
 
 function App() {
+  const [courses, setCourses] = useState([])
   const [courseOfferingsHTML, setCourseOfferingsHTML] = useState("")
   const [profs, setProfs] = useState([]);
   const [courseInfo, setCourseInfo] = useState({});
@@ -45,7 +46,6 @@ function App() {
   const getCourseInfo = id => graphqlRequest.query(courseInfoQuery, { classID: id })
 
   const getData = async (id) => {
-    console.log(id) //form input
     await getCourseInfo(id)
       .then((response) => {
         const courseInfoData = {
@@ -68,8 +68,22 @@ function App() {
       })
   }
 
+  const getAllCourses = async () => {
+    await graphqlRequest.query(allCoursesQuery)
+    .then((response) => {
+      console.log(response.data)
+      const icsCourses = []
+      var num = 0;
+      for (var course in response.data.allCourses) {
+        if (response.data.allCourses[course].id.replace(/\d+$/, "") in departments) {
+          icsCourses.push({id: ++num, name: response.data.allCourses[course].id})
+        }
+      }
+      setCourses(icsCourses)
+    })
+  }
+
   const getInstructorCourseGrades = async () => {
-    console.log(profs)
     const instructorCourseGradesQuery = "query {" + profs.reduce((query, prof) => {
       return query + `${prof.ucinetid}: grades(instructor: "${prof.shortened_name}", department: "${courseInfo.department}", number: "${courseInfo.number}") {
         aggregate{
@@ -84,7 +98,6 @@ function App() {
     }, "") + "}" // constructs instructor grade distribution query
     await graphqlRequest.query(instructorCourseGradesQuery)
       .then((response) => {
-        console.log(response.data)
         const grades = response.data
         for (var key in grades) {
           if (grades[key]) {
@@ -126,6 +139,7 @@ function App() {
       const url = 'https://cors-anywhere.herokuapp.com/https://www.ics.uci.edu/ugrad/courses/listing-course.php?year=2022&level=ALL&department=ALL&program=ALL'
       const response = await fetch(url, {
         headers: {
+          'Content-Type': 'text/plain',
           "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
         }
       })
@@ -134,6 +148,10 @@ function App() {
 
     }
     fetchCourseOfferings()
+  }, [])
+
+  useEffect(() => {
+    getAllCourses()
   }, [])
 
   const getCourseOfferingRowProfs = (html, department, number) => {
@@ -196,7 +214,7 @@ function App() {
   return (
     <Container fluid>
       <Row className="row header-row">
-        <Header getData={getData} />
+        <Header getData={getData} items={courses} />
       </Row>
       <Row className="row schedule-row">
         <Schedule course={courseInfo} fall={fall} winter={winter} spring={spring} />

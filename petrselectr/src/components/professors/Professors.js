@@ -5,7 +5,7 @@ import './ProfessorsStyle.css'
 function Professors({ profs, gradeInfo }) {
 
     return (
-        <div class="d-flex flex-row flex-nowrap overflow-auto professor-container">
+        <div className="d-flex flex-row flex-nowrap overflow-auto professor-container">
             {
                 profs.map((prof) => (
                     <div key={prof.ucinetid} className="card col-4 professor-card">

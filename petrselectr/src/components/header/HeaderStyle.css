@@ -18,3 +18,8 @@
 .search-button:hover {
     background-color: black;
 }
+
+.search-bar {
+    width: 400px !important;
+    margin: 0px 0px 0px 0px;
+}
