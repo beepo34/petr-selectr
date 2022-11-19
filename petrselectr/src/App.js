@@ -116,6 +116,8 @@ function App() {
         }
         setGradeInfo(response.data)
       })
+
+      getCourseOfferingRowProfs(courseOfferingsHTML, courseInfo.department, courseInfo.number)
   }
 
   useEffect(() => {
