@@ -11,7 +11,7 @@ function Professors({ profs, gradeInfo }) {
                     <div key={prof.ucinetid} className="card col-4 professor-card">
                         <b><p className="title">{prof.name}</p></b>
                         <p className="email"><a href={"mailto:" + prof.email}>{prof.email}</a></p>
-                        <p>Average GPA: {gradeInfo.hasOwnProperty(prof.ucinetid) ? gradeInfo[prof.ucinetid].gpa : ""}</p>
+                        <p>Average GPA: {gradeInfo.hasOwnProperty(prof.ucinetid) ? parseFloat(gradeInfo[prof.ucinetid].gpa).toFixed(2) : ""}</p>
                         <Plot
                             data={[
                                 { type: 'bar', ...(gradeInfo.hasOwnProperty(prof.ucinetid) ? gradeInfo[prof.ucinetid].grades : {}) }
