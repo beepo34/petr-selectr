@@ -61,49 +61,62 @@ function App() {
 
         const instructors = []
         response.data.course.instructor_history.forEach(prof => {
-          instructors.push({ ucinetid: prof.ucinetid, name: prof.name, shortened_name: prof.shortened_name })
+          instructors.push({ email: prof.email, ucinetid: prof.ucinetid, name: prof.name, shortened_name: prof.shortened_name })
         })
+        console.log(instructors)
         setProfs(instructors)
       })
-
-    getCourseOfferingRowProfs(courseOfferingsHTML, courseInfo.department, courseInfo.number)
   }
 
   const getInstructorCourseGrades = async () => {
-    const instructorCourseGradesQuery = "query {" + courseInfo.instructor_history.reduce((query, prof) => {
+    console.log(profs)
+    const instructorCourseGradesQuery = "query {" + profs.reduce((query, prof) => {
       return query + `${prof.ucinetid}: grades(instructor: "${prof.shortened_name}", department: "${courseInfo.department}", number: "${courseInfo.number}") {
         aggregate{
-          sum_grade_a_count
-          sum_grade_b_count
-          sum_grade_c_count
-          sum_grade_d_count
-          sum_grade_f_count
+          A: sum_grade_a_count
+          B: sum_grade_b_count
+          C: sum_grade_c_count
+          D: sum_grade_d_count
+          F: sum_grade_f_count
           average_gpa
         }
       }`
     }, "") + "}" // constructs instructor grade distribution query
     await graphqlRequest.query(instructorCourseGradesQuery)
       .then((response) => {
+        console.log(response.data)
         const grades = response.data
         for (var key in grades) {
           if (grades[key]) {
+            var total = grades[key].aggregate.A
+              + grades[key].aggregate.B
+              + grades[key].aggregate.C
+              + grades[key].aggregate.D
+              + grades[key].aggregate.F
             grades[key] = {
-              x: ["A", "B", "C", "D", "F"],
-              y: [grades[key].aggregate.sum_grade_a_count,
-              grades[key].aggregate.sum_grade_b_count,
-              grades[key].aggregate.sum_grade_c_count,
-              grades[key].aggregate.sum_grade_d_count,
-              grades[key].aggregate.sum_grade_f_count]
+              total: total, 
+              gpa: grades[key].aggregate.average_gpa,
+              grades: {
+                x: ["A", "B", "C", "D", "F"],
+                y: [grades[key].aggregate.A * 100/ total,
+                grades[key].aggregate.B * 100/ total,
+                grades[key].aggregate.C * 100/ total,
+                grades[key].aggregate.D * 100/ total,
+                grades[key].aggregate.F * 100/ total]
+              }
+            }
+          }
+          else {
+            grades[key] = {
+              total: 0,
+              gpa: 0,
+              grades: {}
             }
           }
         }
         setGradeInfo(response.data)
       })
   }
-
-  useEffect(() => {
-    if (JSON.stringify(courseInfo) !== "{}") getInstructorCourseGrades();
-  }, [courseInfo])
 
   useEffect(() => {
     const fetchCourseOfferings = async () => {
@@ -174,6 +187,9 @@ function App() {
 
   }
 
+  useEffect(() => {
+    if (JSON.stringify(profs) !== "[]") getInstructorCourseGrades();
+  }, [profs])
 
   return (
     <Container fluid>
@@ -183,7 +199,7 @@ function App() {
       <Row className="row schedule-row">
         <Schedule course={courseInfo} fall={fall} winter={winter} spring={spring} />
       </Row>
-      <Row className="row professor-row">
+      <Row className="row professors-row">
         <Professors profs={profs} gradeInfo={gradeInfo} />
       </Row>
     </Container>

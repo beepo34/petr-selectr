@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './ScheduleStyle.css'
 
 function Schedule({ course, fall, winter, spring }) {

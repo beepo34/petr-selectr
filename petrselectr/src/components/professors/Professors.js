@@ -1,29 +1,34 @@
-import Container from 'react-bootstrap/Container';
-import Col from 'react-bootstrap/Col';
-import Card from 'react-bootstrap/Card';
-import Plot from 'react-plotly.js';
+import Plot from 'react-plotly.js'
+
+import './ProfessorsStyle.css'
 
 function Professors({ profs, gradeInfo }) {
+
     return (
-        <Container fluid className="d-flex flex-row flex-nowrap overflow-auto">
+        <div class="d-flex flex-row flex-nowrap overflow-auto professor-container">
             {
                 profs.map((prof) => (
-                    <Col key={prof.ucinetid} className="col-6">
-                        <Card>
-                            <Card.Body>
-                                <Card.Title>{prof.name}</Card.Title>
-                                <Plot data={[
-                                        { type: 'bar', ...gradeInfo[prof.ucinetid]}
-                                    ]}
-                                    layout = {{autosize: true}}
-                                    config={{displayModeBar: false}}
-                                />
-                            </Card.Body>
-                        </Card>
-                    </Col>
+                    <div key={prof.ucinetid} className="card col-4 professor-card">
+                        <b><p className="title">{prof.name}</p></b>
+                        <p className="email"><a href={"mailto:" + prof.email}>{prof.email}</a></p>
+                        <p>Average GPA: {gradeInfo.hasOwnProperty(prof.ucinetid) ? gradeInfo[prof.ucinetid].gpa : ""}</p>
+                        <Plot
+                            data={[
+                                { type: 'bar', ...(gradeInfo.hasOwnProperty(prof.ucinetid) ? gradeInfo[prof.ucinetid].grades : {}) }
+                            ]}
+                            layout={{
+                                autosize: true,
+                                margin: { l: 20, r: 20, t: 0, b: 20 },
+                                plot_bgcolor: "#00000000",
+                                paper_bgcolor: "#00000000"
+                            }}
+                            config={{ staticPlot: true, responsive: true }}
+                            className="plot"
+                        />
+                    </div>
                 ))
             }
-        </Container>
+        </div>
     )
 }
 

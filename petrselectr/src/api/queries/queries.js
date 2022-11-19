@@ -1,3 +1,12 @@
+export const allCoursesQuery = `query {
+  allCourses {
+    id
+    department
+    number
+  }
+}`
+
+
 export const courseInfoQuery = `query($classID: String!) {
     course(id: $classID) {
       id
@@ -15,6 +24,7 @@ export const courseInfoQuery = `query($classID: String!) {
       instructor_history {
         name
         shortened_name
+        email
         ucinetid
       }
     }
