@@ -32,25 +32,31 @@ function Schedule({ course, fall, winter, spring }) {
                         }
                     </td>
                     <td>
+                        <div className="professor-cell">
                         {
                             fall.map((prof) => (
-                                <p key={prof.name}>{prof.name}</p>
+                                <p className="professor"><a href={prof.link}>{prof.name}</a></p>
                             ))
                         }
+                        </div>
                     </td>
-                    <td>
+                    <td className="professor-cell">
+                    <div className="professor-cell">
                         {
                             winter.map((prof) => (
-                                <p key={prof.name}>{prof.name}</p>
+                                <p className="professor"><a href={prof.link}>{prof.name}</a></p>
                             ))
                         }
+                        </div>
                     </td>
-                    <td>
+                    <td className="professor-cell">
+                    <div className="professor-cell">
                         {
                             spring.map((prof) => (
-                                <p key={prof.name}>{prof.name}</p>
+                                <p className="professor"><a href={prof.link}>{prof.name}</a></p>
                             ))
                         }
+                        </div>
                     </td>
                 </tr>
             </tbody>

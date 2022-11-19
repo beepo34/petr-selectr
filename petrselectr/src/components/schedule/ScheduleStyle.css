@@ -45,5 +45,26 @@ thead th {
     font-weight: 600;
     margin: 5px;
     padding: 5px 10px 5px 10px;
-    
+}
+
+.professor {
+    background: var(--blue-gradient);
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px 2px #e9ecef;
+    margin: 20px;
+    padding: 10px;
+    text-align: center;
+    align-self: flex-start;
+}
+
+.professor a {
+    text-decoration: none;
+    color: #2979bd !important;
+    font-weight: 600;
+}
+
+.professor-cell {
+    align-content: start !important;
+    align-items: start !important;
+    justify-content: start !important;
 }
