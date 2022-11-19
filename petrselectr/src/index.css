@@ -1,4 +1,5 @@
 :root {
+  --background: #f5f6f8;
   --primary-color-1: #2484c6;
   --primary-color-2: #74d1f6;
   --gray-blue: #f5f6fc;
@@ -15,7 +16,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   justify-content: space-between;
   height: 100vh;
-  width: 100%;
+  width: 100vw;
+  background: var(--background);
 }
 
 code {
@@ -31,7 +33,8 @@ div {
 .row {
   justify-content: center;
   align-items: center;
-  padding: 15px;
+  padding: 7.5px;
+  margin: 0;
 }
 
 .header-row{
@@ -43,5 +46,5 @@ div {
 }
 
 .professors-row {
-  height: 55vh;
+  height: 46vh;
 }
